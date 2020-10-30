@@ -4,9 +4,10 @@ ARG FLINK_VERSION=1.10.2-spring1
 ARG SCALA_VERSION=2.12
 
 RUN set -ex; \
+    apt install ca-certificates -y; \
     apt-get update; \
     apt-get upgrade -y && \
-    apt install openjdk-8-jre wget libsnappy1v5 gcc ca-certificates p11-kit -y && \
+    apt install openjdk-8-jre wget libsnappy1v5 gcc p11-kit -y && \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*;
 
