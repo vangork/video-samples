@@ -1,15 +1,17 @@
-FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
+FROM nvidia/cuda:11.1-cudnn8-runtime-ubuntu18.04
 
+ARG FLINK_VERSION=1.10.2-spring1
+ARG SCALA_VERSION=2.12
 
 RUN set -ex; \
     apt-get update; \
     apt-get upgrade -y && \
-    apt install openjdk-8-jre  wget  libsnappy1v5 gcc ca-certificates p11-kit -y && \
+    apt install openjdk-8-jre wget libsnappy1v5 gcc ca-certificates p11-kit -y && \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*;
 
 # Grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.7
+ENV GOSU_VERSION 1.11
 ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk-amd64
 #ENV PATH $JAVA_HOME/bin:$PATH
 
@@ -17,7 +19,7 @@ RUN set -ex; \
   wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)"; \
   wget -nv -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc"; \
   export GNUPGHOME="$(mktemp -d)"; \
-  for server in $(shuf -e ha.pool.sks-keyservers.net \
+  for server in ha.pool.sks-keyservers.net $(shuf -e \
                           hkp://p80.pool.sks-keyservers.net:80 \
                           keyserver.ubuntu.com \
                           hkp://keyserver.ubuntu.com:80 \
@@ -29,25 +31,24 @@ RUN set -ex; \
   rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
   chmod +x /usr/local/bin/gosu; \
   gosu nobody true
-# Configure Flink version
-ENV FLINK_VERSION=1.9.1 \
-    HADOOP_SCALA_VARIANT=scala_2.12
+
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
 ENV PATH=$FLINK_HOME/bin:$PATH
 RUN groupadd --system --gid=9999 flink && \
     useradd --system --home-dir $FLINK_HOME --uid=9999 --gid=flink flink
 WORKDIR $FLINK_HOME
-ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-${HADOOP_SCALA_VARIANT}.tgz
-# Not all mirrors have the .asc files
-ENV FLINK_TGZ_URL=https://archive.apache.org/dist/${FLINK_URL_FILE_PATH} \
-    FLINK_ASC_URL=https://archive.apache.org/dist/${FLINK_URL_FILE_PATH}.asc
+
+ENV FLINK_URL_FILE_PATH=flink-ververica/flink-${FLINK_VERSION}-scala_${SCALA_VERSION}.tgz
+ENV FLINK_TGZ_URL=http://asdrepo.isus.emc.com:8081/artifactory/nautilus-build/${FLINK_URL_FILE_PATH}
 
 # For GPG verification instead of relying on key servers
 COPY KEYS /KEYS
+
 # Install Flink
 RUN set -ex; \
-  wget -nv -O flink.tgz "$FLINK_TGZ_URL" --no-check-certificate; \
+  wget -nv -O flink.tgz "$FLINK_TGZ_URL"; \
+  \
   tar -xf flink.tgz --strip-components=1; \
   rm flink.tgz; \
   \
@@ -77,7 +78,14 @@ COPY ./libtensorflow_framework.so.1 /usr/lib/x86_64-linux-gnu/
 RUN mkdir -p ${FLINK_HOME}/plugins/s3-fs-presto \
  && mkdir -p ${FLINK_HOME}/plugins/s3-fs-hadoop \
  && ln -fs ${FLINK_HOME}/opt/flink-s3-fs-presto-${FLINK_VERSION}.jar ${FLINK_HOME}/plugins/s3-fs-presto \
- && ln -fs ${FLINK_HOME}/opt/flink-s3-fs-hadoop-${FLINK_VERSION}.jar ${FLINK_HOME}/plugins/s3-fs-hadoop
+ && ln -fs ${FLINK_HOME}/opt/flink-s3-fs-hadoop-${FLINK_VERSION}.jar ${FLINK_HOME}/plugins/s3-fs-hadoop \
+ && ln -fs ${FLINK_HOME}/opt/flink-metrics-datadog-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
+ && ln -fs ${FLINK_HOME}/opt/flink-metrics-graphite-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
+ && ln -fs ${FLINK_HOME}/opt/flink-metrics-influxdb-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
+ && ln -fs ${FLINK_HOME}/opt/flink-metrics-prometheus-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
+ && ln -fs ${FLINK_HOME}/opt/flink-metrics-slf4j-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
+ && ln -fs ${FLINK_HOME}/opt/flink-metrics-statsd-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
+ && ln -fs ${FLINK_HOME}/opt/flink-queryable-state-runtime_${SCALA_VERSION}-${FLINK_VERSION}.jar ${FLINK_HOME}/lib
 
 # Configure container
 COPY docker-entrypoint.sh /
