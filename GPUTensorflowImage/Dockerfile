@@ -4,10 +4,13 @@ ARG FLINK_VERSION=1.10.2-spring1
 ARG SCALA_VERSION=2.12
 
 RUN set -ex; \
-    apt install ca-certificates -y; \
+    sed '$d' /etc/apt/sources.list.d/cuda.list; \
+    echo 'deb [trusted=yes] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /' > /etc/apt/sources.list.d/cuda.list; \
+    sed '$d' /etc/apt/sources.list.d/nvidia-ml.list; \
+    echo 'deb [trusted=yes] https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /' > /etc/apt/sources.list.d/cuda.list; \
     apt-get update; \
     apt-get upgrade -y && \
-    apt install openjdk-8-jre wget libsnappy1v5 gcc p11-kit -y && \
+    apt install openjdk-8-jre wget libsnappy1v5 gcc ca-certificates p11-kit -y && \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*;
 
