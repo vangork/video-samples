@@ -8,7 +8,7 @@ RUN set -ex; \
     apt-get clean; \
     apt-get update; \
     apt-get -y install libsnappy1v5 gettext-base gnupg2 curl ca-certificates; \
-    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add -; \
+    curl -fsSLk https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add -; \
     echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list; \
     echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list; \
     apt-get purge --autoremove -y curl; \
