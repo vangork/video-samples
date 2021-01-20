@@ -1,15 +1,15 @@
 apiVersion: flink.nautilus.dellemc.com/v1beta1
 kind: ClusterFlinkImage
 metadata:
-  name: 1.10.2-2.12-cuda11.1-cudnn8-runtime-tensorflow
+  name: 1.10.1-2.12-cuda11.1-cudnn8-runtime-tensorflow
   labels:
     app.kubernetes.io/name: flink-default-resources
     app.kubernetes.io/version: "0.12.0"
     helm.sh/chart: "flink-default-resources-0.12.0"
 spec:
-  flinkVersion: 1.10.2
+  flinkVersion: 1.10.1
   apiVersion: v1
   deployerVersion: v2
   docker:
-    image: {{.Values.flinkImage.repository}}:1.10.2-2.12-{{ .Values.buildVersion }}
+    image: vangork/flink-1.10.1-2.12-cuda11.1-cudnn8-runtime-tensorflow
     pullPolicy: Always

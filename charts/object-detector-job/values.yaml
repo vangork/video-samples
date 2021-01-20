@@ -10,9 +10,9 @@ appParameters:
   output-stream: object-detector-output-video
   mode: "2"
   readerParallelism: 1
-flinkVersion: 1.9.1
+flinkVersion: 1.10.1
 imageRef:
-  name: cuda10.0flink1.9.1
+  name: 1.10.1-2.12-cuda11.1-cudnn8-runtime-tensorflow
 mainClass: io.pravega.example.videoprocessor.FlinkObjectDetectorJob
 mavenCoordinate:
   artifact: flinkprocessor

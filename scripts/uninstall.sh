@@ -1,4 +1,5 @@
-#! /bin/bash
+#!/bin/bash
+
 set -e
 ROOT_DIR=$(dirname $0)/..
 source ${ROOT_DIR}/scripts/env-local.sh
