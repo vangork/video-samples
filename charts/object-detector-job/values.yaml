@@ -21,7 +21,7 @@ mavenCoordinate:
 parallelism: 12
 taskManager:
   cpu: 6000m
-  heap: 6000m
-  memory: 10240m
+  heap: 1024M
+  memory: 10240M
   replicas: 1
   taskSlots: 12
