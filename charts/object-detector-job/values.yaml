@@ -22,6 +22,6 @@ parallelism: 12
 taskManager:
   cpu: 6000m
   heap: 700M
-  memory: 10240M
+  memory: 1024M
   replicas: 1
   taskSlots: 12
