@@ -11,5 +11,5 @@ spec:
   apiVersion: v1
   deployerVersion: v2
   docker:
-    image: vangork/flink-1.10.1-2.12-cuda11.1-cudnn8-runtime-tensorflow
+    image: registry.appdev.fun/gpu/flink-1.10.1-2.12-cuda11.1-cudnn8-runtime-tensorflow:latest
     pullPolicy: Always
