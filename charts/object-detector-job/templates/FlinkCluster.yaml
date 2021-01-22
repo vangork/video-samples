@@ -28,4 +28,9 @@ spec:
     memory: {{ .Values.taskManager.memory }}
     numberOfTaskSlots: {{ .Values.taskManager.taskSlots }}
     replicas: {{ .Values.taskManager.replicas }}
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+      requests:
+        nvidia.com/gpu: "1"
   zookeeperUrl: zookeeper-client:2181
