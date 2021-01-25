@@ -1,15 +1,15 @@
 apiVersion: flink.nautilus.dellemc.com/v1beta1
 kind: ClusterFlinkImage
 metadata:
-  name: flink-1.10.1-2.12-cuda10.0-cudnn7.6-tensorflow1.5
+  name: flink-1.11.2-2.12-cuda10.0-cudnn7.6-tensorflow1.5
   labels:
     app.kubernetes.io/name: flink-default-resources
     app.kubernetes.io/version: "0.12.0"
     helm.sh/chart: "flink-default-resources-0.12.0"
 spec:
-  flinkVersion: 1.10.1
+  flinkVersion: 1.11.2
   apiVersion: v1
   deployerVersion: v2
   docker:
-    image: registry.appdev.fun/gpu/flink-1.10.1-2.12-cuda10.0-cudnn7.6-tensorflow1.5:latest
+    image: registry.appdev.fun/gpu/flink-1.11.2-2.12-cuda10.0-cudnn7.6-tensorflow1.5:latest
     pullPolicy: Always

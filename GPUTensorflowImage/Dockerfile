@@ -92,7 +92,7 @@ RUN python3 -m pip install --no-cache-dir tensorflow==1.15
 RUN python3 -m pip install --no-cache-dir tensorflow-gpu==1.15
 
 # https://eos2git.cec.lab.emc.com/NAUT/analytic-images/blob/master/flink_images/1.10/scala_2.12-debian/Dockerfile
-ARG FLINK_VERSION=1.10.1-spring1
+ARG FLINK_VERSION=1.11.2-spring1
 ARG SCALA_VERSION=2.12
 
 RUN set -ex; \
@@ -143,12 +143,6 @@ RUN mkdir -p ${FLINK_HOME}/plugins/s3-fs-presto \
     && mkdir -p ${FLINK_HOME}/plugins/s3-fs-hadoop \
     && ln -fs ${FLINK_HOME}/opt/flink-s3-fs-presto-${FLINK_VERSION}.jar ${FLINK_HOME}/plugins/s3-fs-presto \
     && ln -fs ${FLINK_HOME}/opt/flink-s3-fs-hadoop-${FLINK_VERSION}.jar ${FLINK_HOME}/plugins/s3-fs-hadoop \
-    && ln -fs ${FLINK_HOME}/opt/flink-metrics-datadog-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
-    && ln -fs ${FLINK_HOME}/opt/flink-metrics-graphite-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
-    && ln -fs ${FLINK_HOME}/opt/flink-metrics-influxdb-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
-    && ln -fs ${FLINK_HOME}/opt/flink-metrics-prometheus-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
-    && ln -fs ${FLINK_HOME}/opt/flink-metrics-slf4j-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
-    && ln -fs ${FLINK_HOME}/opt/flink-metrics-statsd-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
     && ln -fs ${FLINK_HOME}/opt/flink-queryable-state-runtime_${SCALA_VERSION}-${FLINK_VERSION}.jar ${FLINK_HOME}/lib
 
 # Configure container
