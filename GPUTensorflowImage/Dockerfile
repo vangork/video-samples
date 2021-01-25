@@ -92,7 +92,7 @@ RUN python3 -m pip install --no-cache-dir tensorflow==1.15
 RUN python3 -m pip install --no-cache-dir tensorflow-gpu==1.15
 
 # https://eos2git.cec.lab.emc.com/NAUT/analytic-images/blob/master/flink_images/1.10/scala_2.12-debian/Dockerfile
-ARG FLINK_VERSION=1.10.1-spring1
+ARG FLINK_VERSION=1.10.2-spring1
 ARG SCALA_VERSION=2.12
 
 RUN set -ex; \
