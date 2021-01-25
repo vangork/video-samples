@@ -1,9 +1,6 @@
-FROM openjdk:8-jre
+FROM devops-repo.isus.emc.com:8116/nautilus/nautilus-jre:8u265-slim-buster
 
-# https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/11.1.1/ubuntu18.04-x86_64/runtime/cudnn8/Dockerfile
-ENV CUDA_VERSION 11.1.1
-ENV NCCL_VERSION 2.8.3
-ENV CUDNN_VERSION 8.0.5.39
+# https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/11.0.3/ubuntu18.04-x86_64/base/Dockerfile
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg2 curl ca-certificates && \
@@ -14,23 +11,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get purge --autoremove -y curl \
     && rm -rf /var/lib/apt/lists/*
 
+ENV CUDA_VERSION 10.0.130
+ENV CUDA_PKG_VERSION 10-0=$CUDA_VERSION-1
+
 # For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    cuda-cudart-11-1=11.1.74-1 \
-    cuda-compat-11-1 \
-    cuda-libraries-11-1=11.1.1-1 \
-    libnpp-11-1=11.1.2.301-1 \
-    cuda-nvtx-11-1=11.1.74-1 \
-    libcublas-11-1=11.3.0.106-1 \
-    libnccl2=$NCCL_VERSION-1+cuda11.1 \
-    libcudnn8=$CUDNN_VERSION-1+cuda11.1 \
-    && ln -s cuda-11.1 /usr/local/cuda && \
-    apt-mark hold libcublas-11-1 libnccl2 libcudnn8 && \
+    cuda-cudart-$CUDA_PKG_VERSION \
+    cuda-compat-10-0 \
+    && ln -s cuda-10.0 /usr/local/cuda && \
     rm -rf /var/lib/apt/lists/*
 
 # Required for nvidia-docker v1
-RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf \
-    && echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
 
 ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
 ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
@@ -38,10 +31,68 @@ ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
 # nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
-ENV NVIDIA_REQUIRE_CUDA "cuda>=11.1 brand=tesla,driver>=418,driver<419 brand=tesla,driver>=440,driver<441 driver>=450,driver<451"
+ENV NVIDIA_REQUIRE_CUDA "cuda>=10.0 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=410,driver<411"
+
+#https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tools/dockerfiles/dockerfiles/gpu.Dockerfile
+ARG CUDA=10.0
+ARG CUDNN=7.6.2.24-1
+
+# Needed for string substitution
+SHELL ["/bin/bash", "-c"]
+# Pick up some TF dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cuda-command-line-tools-${CUDA/./-} \
+    cuda-cublas-${CUDA/./-} \
+    cuda-cufft-${CUDA/./-} \
+    cuda-curand-${CUDA/./-} \
+    cuda-cusolver-${CUDA/./-} \
+    cuda-cusparse-${CUDA/./-} \
+    curl \
+    libcudnn7=${CUDNN}+cuda${CUDA} \
+    libfreetype6-dev \
+    libhdf5-serial-dev \
+    libzmq3-dev \
+    pkg-config \
+    software-properties-common \
+    unzip
+
+# Install TensorRT
+RUN apt-get install -y --no-install-recommends libnvinfer5=5.1.5-1+cuda${CUDA} \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# For CUDA profiling, TensorFlow requires CUPTI.
+ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+# Link the libcuda stub to the location where tensorflow is searching for it and reconfigure
+# dynamic linker run-time bindings
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 \
+    && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
+    && ldconfig
+
+# See http://bugs.python.org/issue19846
+ENV LANG C.UTF-8
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip
+
+RUN python3 -m pip --no-cache-dir install --upgrade \
+    "pip<20.3" \
+    setuptools
+
+# Some TF tools expect a "python" binary
+RUN ln -s $(which python3) /usr/local/bin/python
+
+# https://www.tensorflow.org/install/gpu
+# Installs tensorflow
+# 对于 1.15 及更早版本，CPU 和 GPU 软件包是分开的
+RUN python3 -m pip install --no-cache-dir tensorflow==1.15
+RUN python3 -m pip install --no-cache-dir tensorflow-gpu==1.15
 
 # https://eos2git.cec.lab.emc.com/NAUT/analytic-images/blob/master/flink_images/1.10/scala_2.12-debian/Dockerfile
-ARG FLINK_VERSION=1.10.1-spring1
+ARG FLINK_VERSION=1.10.2-spring1
 ARG SCALA_VERSION=2.12
 
 RUN set -ex; \
@@ -99,8 +150,6 @@ RUN mkdir -p ${FLINK_HOME}/plugins/s3-fs-presto \
     && ln -fs ${FLINK_HOME}/opt/flink-metrics-slf4j-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
     && ln -fs ${FLINK_HOME}/opt/flink-metrics-statsd-${FLINK_VERSION}.jar ${FLINK_HOME}/lib \
     && ln -fs ${FLINK_HOME}/opt/flink-queryable-state-runtime_${SCALA_VERSION}-${FLINK_VERSION}.jar ${FLINK_HOME}/lib
-
-COPY ./libtensorflow_framework.so.1 /usr/lib/x86_64-linux-gnu/
 
 # Configure container
 COPY docker-entrypoint.sh /
