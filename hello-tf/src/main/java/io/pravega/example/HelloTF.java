@@ -1,8 +1,5 @@
 package io.pravega.example;
 
-import io.pravega.client.stream.Stream;
-import io.pravega.example.common.PravegaAppConfiguration;
-
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -13,6 +10,7 @@ import org.apache.flink.api.java.utils.ParameterTool;
 
 import io.pravega.connectors.flink.FlinkPravegaReader;
 import io.pravega.connectors.flink.PravegaConfig;
+import io.pravega.client.stream.Stream;
 
 import org.tensorflow.Graph;
 import org.tensorflow.Session;
