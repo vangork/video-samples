@@ -30,13 +30,13 @@ dependencies {
 
     compile "org.slf4j:slf4j-api:${slf4jApiVersion}"
     compile "org.apache.flink:flink-streaming-java_${flinkScalaVersion}:${flinkVersion}"
-    compile "org.tensorflow:tensorflow:${tensorflowVersion}"
+    compileOnly "org.tensorflow:tensorflow:${tensorflowVersion}"
     compile "io.pravega:pravega-connectors-flink-${flinkShortVersion}_${flinkScalaVersion}:${pravegaFlinkConnectorVersion}"
 
     implementation "org.apache.flink:flink-clients_${flinkScalaVersion}:${flinkVersion}"
 
     if (enableGPU.toBoolean()) {
-        compile group: 'org.tensorflow', name: 'libtensorflow_jni_gpu', version: tensorflowVersion
+        compileOnly group: 'org.tensorflow', name: 'libtensorflow_jni_gpu', version: tensorflowVersion
     }
 
     if (includePravegaCredentials.toBoolean()) {
@@ -49,6 +49,9 @@ shadowJar {
         exclude(dependency("org.scala-lang:scala-library"))
         exclude(dependency("org.scala-lang:scala-reflect"))
         exclude(dependency("org.scala-lang:scala-compiler"))
+        exclude(dependency("org.tensorflow:tensorflow"))
+        exclude(dependency("org.tensorflow:libtensorflow_jni_gpu"))
+        exclude(dependency("org.apache.flink:flink-clients_${flinkScalaVersion}"))
     }
 
     classifier = ""

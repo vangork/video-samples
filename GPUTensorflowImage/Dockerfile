@@ -71,27 +71,27 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
     && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
     && ldconfig
 
-# See http://bugs.python.org/issue19846
-ENV LANG C.UTF-8
-
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip
-
-RUN python3 -m pip --no-cache-dir install --upgrade \
-    "pip<20.3" \
-    setuptools
-
-# Some TF tools expect a "python" binary
-RUN ln -s $(which python3) /usr/local/bin/python
-
-# https://www.tensorflow.org/install/gpu
-# Installs tensorflow
-# 对于 1.15 及更早版本，CPU 和 GPU 软件包是分开的
-RUN python3 -m pip install --no-cache-dir tensorflow==1.15
-RUN python3 -m pip install --no-cache-dir tensorflow-gpu==1.15
-
-ENV LD_LIBRARY_PATH /usr/local/lib/python3.7/dist-packages/tensorflow_core:$LD_LIBRARY_PATH
+## See http://bugs.python.org/issue19846
+#ENV LANG C.UTF-8
+#
+#RUN apt-get update && apt-get install -y \
+#    python3 \
+#    python3-pip
+#
+#RUN python3 -m pip --no-cache-dir install --upgrade \
+#    "pip<20.3" \
+#    setuptools
+#
+## Some TF tools expect a "python" binary
+#RUN ln -s $(which python3) /usr/local/bin/python
+#
+## https://www.tensorflow.org/install/gpu
+## Installs tensorflow
+## 对于 1.15 及更早版本，CPU 和 GPU 软件包是分开的
+#RUN python3 -m pip install --no-cache-dir tensorflow==1.15
+#RUN python3 -m pip install --no-cache-dir tensorflow-gpu==1.15
+#
+#ENV LD_LIBRARY_PATH /usr/local/lib/python3.7/dist-packages/tensorflow_core:$LD_LIBRARY_PATH
 
 # https://eos2git.cec.lab.emc.com/NAUT/analytic-images/blob/master/flink_images/1.10/scala_2.12-debian/Dockerfile
 ARG FLINK_VERSION=1.11.2-spring1
@@ -148,6 +148,15 @@ RUN mkdir -p ${FLINK_HOME}/plugins/s3-fs-presto \
     && ln -fs ${FLINK_HOME}/opt/flink-queryable-state-runtime_${SCALA_VERSION}-${FLINK_VERSION}.jar ${FLINK_HOME}/lib
 
 #COPY ../flinkprocessor/build/libs/video-flinkprocessor-0.1.0.jar ${FLINK_HOME}/lib
+ARG TF_VERSION=1.15.0
+ARG TF_JNI_FILE=https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-${TF_VERSION}.tar.gz
+ARG LIB_TF_FILE=https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-${TF_VERSION}.jar
+RUN mkdir -p ${FLINK_HOME}/plugins/tensorflow/jni \
+    && wget -nv -O ${FLINK_HOME}/plugins/tensorflow/lib/jni.tar.gz "$TF_JNI_FILE" \
+    && tar -zxvf ${FLINK_HOME}/plugins/tensorflow/lib/jni.tar.gz -C ${FLINK_HOME}/plugins/tensorflow/jni/ \
+    && rm -f ${FLINK_HOME}/plugins/tensorflow/lib/jni.tar.gz \
+    && wget -nv -O ${FLINK_HOME}/plugins/tensorflow/libtensorflow-${TF_VERSION}.jar "$LIB_TF_FILE" \
+    && ln -fs ${FLINK_HOME}/plugins/tensorflow/libtensorflow-${TF_VERSION}.jar ${FLINK_HOME}/lib
 
 # Configure container
 COPY docker-entrypoint.sh /
