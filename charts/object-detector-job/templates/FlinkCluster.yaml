@@ -19,10 +19,10 @@ spec:
 #        requests:
 #          storage: 5Gi
 #      storageClassName: nfs   # use nfs to avoid affinity issues - TODO: change back to standard
-  storage:
-    volumeSource:
-      persistentVolumeClaim:
-        claimName: data-project
+#  storage:
+#    volumeSource:
+#      persistentVolumeClaim:
+#        claimName: data-project
   taskManager:
     cpu: {{ .Values.taskManager.cpu }}
     memory: {{ .Values.taskManager.memory }}
@@ -34,3 +34,5 @@ spec:
       requests:
         nvidia.com/gpu: "1"
   zookeeperUrl: zookeeper-client:2181
+  metrics:
+    name: project-metrics
