@@ -153,10 +153,10 @@ ARG TF_JNI_FILE=https://storage.googleapis.com/tensorflow/libtensorflow/libtenso
 ARG LIB_TF_FILE=https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-${TF_VERSION}.jar
 RUN set -ex; \
     mkdir -p ${FLINK_HOME}/plugins/tensorflow/lib; \
-    wget -nv -O ${FLINK_HOME}/plugins/tensorflow/lib/jni.tar.gz "$TF_JNI_FILE"; \
+    wget --no-check-certificate -nv -O ${FLINK_HOME}/plugins/tensorflow/lib/jni.tar.gz "$TF_JNI_FILE"; \
     tar -zxvf ${FLINK_HOME}/plugins/tensorflow/lib/jni.tar.gz -C ${FLINK_HOME}/plugins/tensorflow/jni/; \
     rm -f ${FLINK_HOME}/plugins/tensorflow/lib/jni.tar.gz; \
-    wget -nv -O ${FLINK_HOME}/plugins/tensorflow/libtensorflow-${TF_VERSION}.jar "$LIB_TF_FILE"; \
+    wget --no-check-certificate -nv -O ${FLINK_HOME}/plugins/tensorflow/libtensorflow-${TF_VERSION}.jar "$LIB_TF_FILE"; \
     ln -fs ${FLINK_HOME}/plugins/tensorflow/libtensorflow-${TF_VERSION}.jar ${FLINK_HOME}/lib;
 ENV LD_LIBRARY_PATH ${FLINK_HOME}/plugins/tensorflow/lib:$LD_LIBRARY_PATH
 
