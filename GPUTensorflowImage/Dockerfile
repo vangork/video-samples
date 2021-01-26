@@ -147,7 +147,7 @@ RUN mkdir -p ${FLINK_HOME}/plugins/s3-fs-presto \
     && ln -fs ${FLINK_HOME}/opt/flink-s3-fs-hadoop-${FLINK_VERSION}.jar ${FLINK_HOME}/plugins/s3-fs-hadoop \
     && ln -fs ${FLINK_HOME}/opt/flink-queryable-state-runtime_${SCALA_VERSION}-${FLINK_VERSION}.jar ${FLINK_HOME}/lib
 
-COPY ../flinkprocessor/build/libs/video-flinkprocessor-0.1.0.jar ${FLINK_HOME}/lib
+#COPY ../flinkprocessor/build/libs/video-flinkprocessor-0.1.0.jar ${FLINK_HOME}/lib
 
 # Configure container
 COPY docker-entrypoint.sh /

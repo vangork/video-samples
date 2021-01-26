@@ -1,0 +1,38 @@
+apiVersion: flink.nautilus.dellemc.com/v1beta1
+kind: FlinkCluster
+metadata:
+  labels:
+    name: {{ $.Release.Name }}
+  name: {{ $.Release.Name }}
+spec:
+  imageRef:
+    name: {{ $.Values.imageRef.name }}
+  jobManager:
+    cpu: 250m
+    memory: 1024M
+    replicas: 1
+#  localStorage:
+#    replicas: 2
+#    volumeClaimTemplate:
+#      accessModes: [ ReadWriteOnce ]
+#      resources:
+#        requests:
+#          storage: 5Gi
+#      storageClassName: nfs   # use nfs to avoid affinity issues - TODO: change back to standard
+#  storage:
+#    volumeSource:
+#      persistentVolumeClaim:
+#        claimName: data-project
+  taskManager:
+    cpu: {{ .Values.taskManager.cpu }}
+    memory: {{ .Values.taskManager.memory }}
+    numberOfTaskSlots: {{ .Values.taskManager.taskSlots }}
+    replicas: {{ .Values.taskManager.replicas }}
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+      requests:
+        nvidia.com/gpu: "1"
+  zookeeperUrl: zookeeper-client:2181
+  metrics:
+    name: project-metrics

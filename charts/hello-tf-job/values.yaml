@@ -1,0 +1,17 @@
+appParameters:
+  input-stream: adas-raw-video
+flinkVersion: 1.11.2
+imageRef:
+  name: flink-1.11.2-2.12-cuda10.0-cudnn7.6-tensorflow1.5
+mainClass: io.pravega.example.HelloTF
+mavenCoordinate:
+  artifact: hello-tf
+  group: io.pravega.example
+  version: 0.1.0
+parallelism: 12
+taskManager:
+  cpu: 6000m
+  heap: 700M
+  memory: 12G
+  replicas: 1
+  taskSlots: 12
