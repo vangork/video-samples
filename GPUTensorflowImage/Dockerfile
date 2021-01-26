@@ -91,6 +91,8 @@ RUN ln -s $(which python3) /usr/local/bin/python
 RUN python3 -m pip install --no-cache-dir tensorflow==1.15
 RUN python3 -m pip install --no-cache-dir tensorflow-gpu==1.15
 
+ENV LD_LIBRARY_PATH /usr/local/lib/python3.7/dist-packages/tensorflow_core:$LD_LIBRARY_PATH
+
 # https://eos2git.cec.lab.emc.com/NAUT/analytic-images/blob/master/flink_images/1.10/scala_2.12-debian/Dockerfile
 ARG FLINK_VERSION=1.11.2-spring1
 ARG SCALA_VERSION=2.12
