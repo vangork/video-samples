@@ -95,20 +95,20 @@ distributions {
     }
 }
 
-publishing {
-    repositories {
-        maven {
-            credentials {
-                username "$System.env.MAVEN_USERNAME"
-                password "$System.env.MAVEN_PASSWORD"
-            }
-            url "$System.env.MAVEN_URL"
-        }
-    }
-
-    publications {
-        shadow(MavenPublication) { publication ->
-            project.shadow.component(publication)
-        }
-    }
-}
+//publishing {
+//    repositories {
+//        maven {
+//            credentials {
+//                username "$System.env.MAVEN_USERNAME"
+//                password "$System.env.MAVEN_PASSWORD"
+//            }
+//            url "$System.env.MAVEN_URL"
+//        }
+//    }
+//
+//    publications {
+//        shadow(MavenPublication) { publication ->
+//            project.shadow.component(publication)
+//        }
+//    }
+//}

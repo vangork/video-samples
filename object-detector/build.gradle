@@ -1,0 +1,110 @@
+/*
+ * Copyright (c) 2019 Dell Inc., or its subsidiaries. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ */
+
+apply plugin: "distribution"
+apply plugin: "java"
+apply plugin: "maven"
+apply plugin: "application"
+apply plugin: "maven-publish"
+apply plugin: "com.github.johnrengelman.shadow"
+
+group = "io.pravega.example"
+version = samplesVersion
+archivesBaseName = "object-detector"
+description = "object-detector"
+// The default main class.
+mainClassName =  "io.pravega.example.FlinkObjectDetector"
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations {
+    flinkShadowJar // dependencies which go into the shadowJar
+
+    // always exclude these (also from transitive dependencies) since they are provided by Flink
+    flinkShadowJar.exclude group: "org.tensorflow", module: 'libtensorflow'
+    flinkShadowJar.exclude group: "org.tensorflow", module: 'libtensorflow_jni_gpu'
+
+    flinkShadowJar.exclude group: 'org.apache.flink', module: 'force-shading'
+    flinkShadowJar.exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    flinkShadowJar.exclude group: 'org.slf4j'
+    flinkShadowJar.exclude group: 'org.apache.logging.log4j'
+
+    flinkShadowJar.exclude group: "org.scala-lang", module: "scala-library"
+    flinkShadowJar.exclude group: "org.scala-lang", module: "scala-reflect"
+    flinkShadowJar.exclude group: "org.scala-lang", module: "scala-compiler"
+}
+
+dependencies {
+    compile "org.slf4j:slf4j-api:${slf4jApiVersion}"
+    compile "org.apache.flink:flink-streaming-java_${flinkScalaVersion}:${flinkVersion}"
+    flinkShadowJar "io.pravega:pravega-connectors-flink-${flinkShortVersion}_${flinkScalaVersion}:${pravegaFlinkConnectorVersion}"
+
+    flinkShadowJar group: 'org.tensorflow', name: 'tensorflow', version: tensorflowVersion
+    compile group: 'org.tensorflow', name: 'libtensorflow', version: tensorflowVersion
+    flinkShadowJar group: 'org.tensorflow', name: 'proto', version: tensorflowVersion
+
+    if (enableGPU.toBoolean()) {
+        compile group: 'org.tensorflow', name: 'libtensorflow_jni_gpu', version: tensorflowVersion
+    }
+
+    if (includePravegaCredentials.toBoolean()) {
+        flinkShadowJar "io.pravega:pravega-keycloak-client:${pravegaCredentialsVersion}"
+    }
+}
+
+// make compileOnly dependencies available for tests:
+sourceSets {
+    main.compileClasspath += configurations.flinkShadowJar
+    main.runtimeClasspath += configurations.flinkShadowJar
+
+    test.compileClasspath += configurations.flinkShadowJar
+    test.runtimeClasspath += configurations.flinkShadowJar
+
+    javadoc.classpath += configurations.flinkShadowJar
+}
+
+run.classpath = sourceSets.main.runtimeClasspath
+
+shadowJar {
+    configurations = [project.configurations.flinkShadowJar]
+    exclude 'org/tensorflow/native/**'
+    zip64 true
+}
+
+distributions {
+    main {
+        baseName = archivesBaseName
+        contents {
+            into("lib") {
+                from shadowJar
+                from(project.configurations.shadow)
+            }
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username "$System.env.MAVEN_USERNAME"
+                password "$System.env.MAVEN_PASSWORD"
+            }
+            url "$System.env.MAVEN_URL"
+        }
+    }
+
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+        }
+    }
+}

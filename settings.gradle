@@ -19,4 +19,4 @@ include 'common'
 include 'html-video-player'
 include 'person-database'
 include 'hello-tf'
-
+include 'object-detector'
