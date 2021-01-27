@@ -16,12 +16,12 @@ apply plugin: "application"
 apply plugin: "maven-publish"
 apply plugin: "com.github.johnrengelman.shadow"
 
-group = "io.pravega.example"
+group = "io.pravega.sample"
 version = samplesVersion
 archivesBaseName = "object-detector"
 description = "object-detector"
 // The default main class.
-mainClassName =  "io.pravega.example.FlinkObjectDetector"
+mainClassName =  "io.pravega.sample.FlinkObjectDetector"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
