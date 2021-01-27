@@ -18,10 +18,10 @@ mavenCoordinate:
   artifact: object-detector
   group: io.pravega.sample
   version: 0.1.0
-parallelism: 12
+parallelism: 2
 taskManager:
-  cpu: 6000m
+  cpu: 24000m
   heap: 700M
   memory: 50G
   replicas: 1
-  taskSlots: 12
+  taskSlots: 2
