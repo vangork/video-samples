@@ -1,4 +1,4 @@
-FROM devops-repo.isus.emc.com:8116/nautilus/nautilus-jre:8u265-slim-buster
+FROM openjdk:8-jre
 
 # https://eos2git.cec.lab.emc.com/NAUT/analytic-images/blob/master/flink_images/1.10/scala_2.12-debian/Dockerfile
 ARG FLINK_VERSION=1.11.2-spring1
