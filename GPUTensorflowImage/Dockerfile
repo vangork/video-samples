@@ -35,7 +35,7 @@ ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=396,driver<397 brand=tes
 
 #https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tools/dockerfiles/dockerfiles/gpu.Dockerfile
 ARG CUDA=10.1
-ARG CUDNN=7.6.2.24-1
+ARG CUDNN=7.6.4.38-1
 
 # Needed for string substitution
 SHELL ["/bin/bash", "-c"]
