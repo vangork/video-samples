@@ -26,36 +26,44 @@ mainClassName = "io.pravega.example.HelloTF"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations {
+    flinkShadowJar // dependencies which go into the shadowJar
+
+    // always exclude these (also from transitive dependencies) since they are provided by Flink
+    flinkShadowJar.exclude group: "org.tensorflow"
+    //flinkShadowJar.exclude group: "org.apache.flink:flink-clients_${flinkScalaVersion}"
+    flinkShadowJar.exclude group: "org.slf4j"
+    flinkShadowJar.exclude group: "org.apache.logging.log4j"
+}
+
 dependencies {
 
     compile "org.slf4j:slf4j-api:${slf4jApiVersion}"
     compile "org.apache.flink:flink-streaming-java_${flinkScalaVersion}:${flinkVersion}"
-    compileOnly "org.tensorflow:tensorflow:${tensorflowVersion}"
-    compile "io.pravega:pravega-connectors-flink-${flinkShortVersion}_${flinkScalaVersion}:${pravegaFlinkConnectorVersion}"
+    compile "org.tensorflow:tensorflow:${tensorflowVersion}"
+    flinkShadowJar "io.pravega:pravega-connectors-flink-${flinkShortVersion}_${flinkScalaVersion}:${pravegaFlinkConnectorVersion}"
 
-    implementation "org.apache.flink:flink-clients_${flinkScalaVersion}:${flinkVersion}"
+    compile "org.apache.flink:flink-clients_${flinkScalaVersion}:${flinkVersion}"
 
     if (enableGPU.toBoolean()) {
-        compileOnly group: 'org.tensorflow', name: 'libtensorflow_jni_gpu', version: tensorflowVersion
+        compile group: 'org.tensorflow', name: 'libtensorflow_jni_gpu', version: tensorflowVersion
     }
 
     if (includePravegaCredentials.toBoolean()) {
-        compile "io.pravega:pravega-keycloak-client:${pravegaCredentialsVersion}"
+        flinkShadowJar "io.pravega:pravega-keycloak-client:${pravegaCredentialsVersion}"
     }
 }
 
-shadowJar {
-    dependencies {
-        exclude(dependency("org.scala-lang:scala-library"))
-        exclude(dependency("org.scala-lang:scala-reflect"))
-        exclude(dependency("org.scala-lang:scala-compiler"))
-        exclude(dependency("org.tensorflow:tensorflow"))
-        exclude(dependency("org.tensorflow:libtensorflow_jni_gpu"))
-        exclude(dependency("org.apache.flink:flink-clients_${flinkScalaVersion}"))
-    }
+// make compileOnly dependencies available for tests:
+sourceSets {
+    main.compileClasspath += configurations.flinkShadowJar
+    main.runtimeClasspath += configurations.flinkShadowJar
+}
 
-    classifier = ""
-    zip64 true
+run.classpath = sourceSets.main.runtimeClasspath
+
+shadowJar {
+    configurations = [project.configurations.flinkShadowJar]
 }
 
 distributions {
