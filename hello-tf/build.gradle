@@ -30,14 +30,13 @@ configurations {
     flinkShadowJar // dependencies which go into the shadowJar
 
     // always exclude these (also from transitive dependencies) since they are provided by Flink
-    flinkShadowJar.exclude group: "org.tensorflow"
+    //flinkShadowJar.exclude group: "org.tensorflow"
     //flinkShadowJar.exclude group: "org.apache.flink:flink-clients_${flinkScalaVersion}"
     flinkShadowJar.exclude group: "org.slf4j"
     flinkShadowJar.exclude group: "org.apache.logging.log4j"
 }
 
 dependencies {
-
     compile "org.slf4j:slf4j-api:${slf4jApiVersion}"
     compile "org.apache.flink:flink-streaming-java_${flinkScalaVersion}:${flinkVersion}"
     compile "org.tensorflow:tensorflow:${tensorflowVersion}"
