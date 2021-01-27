@@ -1,4 +1,4 @@
-FROM devops-repo.isus.emc.com:8116/nautilus/nautilus-jre:8u265-slim-buster
+FROM openjdk:8-jre
 
 # https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/11.0.3/ubuntu18.04-x86_64/base/Dockerfile
 
@@ -11,14 +11,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get purge --autoremove -y curl \
     && rm -rf /var/lib/apt/lists/*
 
-ENV CUDA_VERSION 10.0.130
-ENV CUDA_PKG_VERSION 10-0=$CUDA_VERSION-1
+ENV CUDA_VERSION 10.1.243
+ENV CUDA_PKG_VERSION 10-1=$CUDA_VERSION-1
 
 # For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cuda-cudart-$CUDA_PKG_VERSION \
-    cuda-compat-10-0 \
-    && ln -s cuda-10.0 /usr/local/cuda && \
+    cuda-compat-10-1 \
+    && ln -s cuda-10.1 /usr/local/cuda && \
     rm -rf /var/lib/apt/lists/*
 
 # Required for nvidia-docker v1
@@ -31,10 +31,10 @@ ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
 # nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
-ENV NVIDIA_REQUIRE_CUDA "cuda>=10.0 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=410,driver<411"
+ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=396,driver<397 brand=tesla,driver>=410,driver<411 brand=tesla,driver>=418,driver<419"
 
 #https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tools/dockerfiles/dockerfiles/gpu.Dockerfile
-ARG CUDA=10.0
+ARG CUDA=10.1
 ARG CUDNN=7.6.2.24-1
 
 # Needed for string substitution
@@ -43,7 +43,11 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cuda-command-line-tools-${CUDA/./-} \
-    cuda-cublas-${CUDA/./-} \
+    # There appears to be a regression in libcublas10=10.2.2.89-1 which
+    # prevents cublas from initializing in TF. See
+    # https://github.com/tensorflow/tensorflow/issues/9489#issuecomment-562394257
+    libcublas10=10.2.1.243-1 \
+    cuda-nvrtc-${CUDA/./-} \
     cuda-cufft-${CUDA/./-} \
     cuda-curand-${CUDA/./-} \
     cuda-cusolver-${CUDA/./-} \
@@ -58,7 +62,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip
 
 # Install TensorRT
-RUN apt-get install -y --no-install-recommends libnvinfer5=5.1.5-1+cuda${CUDA} \
+RUN apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda${CUDA} \
+    libnvinfer-plugin6=6.0.1-1+cuda${CUDA} \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -147,7 +152,7 @@ RUN mkdir -p ${FLINK_HOME}/plugins/s3-fs-presto \
     && ln -fs ${FLINK_HOME}/opt/flink-s3-fs-hadoop-${FLINK_VERSION}.jar ${FLINK_HOME}/plugins/s3-fs-hadoop \
     && ln -fs ${FLINK_HOME}/opt/flink-queryable-state-runtime_${SCALA_VERSION}-${FLINK_VERSION}.jar ${FLINK_HOME}/lib
 
-#COPY ../flinkprocessor/build/libs/video-flinkprocessor-0.1.0.jar ${FLINK_HOME}/lib
+## Add tensorflow libs and jars
 ARG TF_VERSION=1.15.0
 ARG TF_JNI_FILE=https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-${TF_VERSION}.tar.gz
 ARG LIB_TF_FILE=https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-${TF_VERSION}.jar
