@@ -12,7 +12,7 @@ appParameters:
   readerParallelism: 1
 flinkVersion: 1.11.2
 imageRef:
-  name: flink-1.11.2-2.12-cuda10.1-cudnn7.6-tensorflow1.5
+  name: flink-1.11.2-2.12-cuda10.0-cudnn7.6-tensorflow1.5
 mainClass: io.pravega.sample.FlinkObjectDetectorJob
 mavenCoordinate:
   artifact: object-detector
